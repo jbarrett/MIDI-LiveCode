@@ -1,0 +1,25 @@
+#!/usr/bin/env perl
+
+use v5.38;
+
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+
+use Getopt::Long qw/ :config pass_through /;
+use MIDI::LiveCode::Watcher;
+
+my @includes;
+my $inc_lib;
+GetOptions (
+    'include|I=s' => \@includes,
+    'include_lib|l' => \$inc_lib
+);
+push @includes, 'lib' if $inc_lib;
+my @modules = @ARGV;
+
+use lib @includes;
+
+die "Usage: $0 [-I lib -I...] Module::Name Another::Module::Name" unless @modules;
+
+MIDI::LiveCode::Watcher->new( modules => \@modules )->go;
+
