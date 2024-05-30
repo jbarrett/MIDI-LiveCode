@@ -52,7 +52,7 @@ class MIDI::LiveCode::Watcher {
                 }
             );
             $loop->add( $routines->{$module} );
-            $channels->{ $module }->configure(
+            $channels->{ $module }->recv(
                 on_recv => sub { $self->_handle( @_ ) }
             );
         }
