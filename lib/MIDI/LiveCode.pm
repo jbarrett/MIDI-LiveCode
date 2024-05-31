@@ -13,5 +13,6 @@ sub import {
     feature->import::into( $caller, @FEATURES );
     $_->import::into( $caller ) for @PRAGMAS;
     $_->import::into( $caller ) for @MODULES;
-    $caller->init;
+    require MIDI::LiveCode::Events;
+    MIDI::LiveCode::Events->for_module( $caller )->init;
 }

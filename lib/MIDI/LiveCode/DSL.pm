@@ -28,7 +28,6 @@ my @parameters = qw/
 
 my @specials = qw/
     finalize
-    init
     midi_bits
     poop
     random
@@ -64,12 +63,12 @@ our @EXPORT_OK = our @EXPORT = (
 );
 
 sub _events {
-    MIDI::LiveCode::Events->for_module( scalar caller(2) );
+    MIDI::LiveCode::Events->for_module( scalar caller(1) );
 }
 
 my $event;
 sub _current_event {
-    my $caller = (caller(1))[3] =~ s/.*://gr;
+    my $caller = (caller(0))[3] =~ s/.*://gr;
     croak "$caller called outside event definition" unless $event;
     return $event;
 }
@@ -116,10 +115,6 @@ sub midi_bits( $bits ) {
 
 sub finalize {
     _events->finalize;
-}
-
-sub init {
-    _events->init;
 }
 
 for my ( $alias, $orig ) ( $aliases->%* ) {
