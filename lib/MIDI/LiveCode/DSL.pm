@@ -15,35 +15,36 @@ my @events = qw/
 /;
 
 my @parameters = qw/
-    quantize
-    offset
-    every
-    channel
-    trigger
-    note
     cc
-    velocity
+    channel
+    every
+    note
+    offset
     probability
+    quantize
+    trigger
+    velocity
 /;
 
 my @specials = qw/
-    midi_bits
-    random
     finalize
     init
+    midi_bits
+    poop
+    random
 /;
 
 my $aliases = { qw/
+    bpm       tempo
+    delay     offset
     finalise  finalize
+    port      device
+    prob      probability
     quantise  quantize
     quant     quantize
-    delay     offset
-    bpm       tempo
-    port      device
     repeat    every
     time      signature
     vel       velocity
-    prob      probability
 / };
 
 use meta;
@@ -113,7 +114,7 @@ sub midi_bits( $bits ) {
     _events->push_config( midi_bits => $bits );
 }
 
-sub finalize :prototype() {
+sub finalize {
     _events->finalize;
 }
 
@@ -126,7 +127,3 @@ for my ( $alias, $orig ) ( $aliases->%* ) {
         "&$alias" => $meta->get_symbol( "&$orig" )->reference
     );
 }
-
-#BEGIN {
-#    _events->init;
-#}
