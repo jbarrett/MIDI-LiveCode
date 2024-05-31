@@ -3,10 +3,12 @@ package MIDI::LiveCode::DSL;
 use v5.38;
 use experimental qw/ defer for_list /;
 
+use Carp qw/ carp croak /;
+
 my @config = qw/
-    tempo
-    signature
     device
+    signature
+    tempo
 /;
 
 my @events = qw/

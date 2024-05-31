@@ -4,7 +4,7 @@ my $instances;
 
 class MIDI::LiveCode::Events {
 
-    use Carp qw/ carp croak verbose /;
+    use Carp qw/ carp croak /;
 
     field $module :param;
     field $events;

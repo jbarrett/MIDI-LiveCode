@@ -30,7 +30,6 @@ class MIDI::LiveCode::Watcher {
         for my $module ( $modules->@* ) {
             my $fn = $module =~ s{::}{/}gr . '.pm';
             require $fn;
-
             my $full_fn = $INC{ $fn };
             $files->{ $module } = IO::Async::File->new(
                 filename => $full_fn,
