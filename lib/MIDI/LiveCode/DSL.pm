@@ -29,7 +29,6 @@ my @parameters = qw/
 my @specials = qw/
     finalize
     midi_bits
-    poop
     random
 /;
 
