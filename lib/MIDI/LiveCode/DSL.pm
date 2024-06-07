@@ -9,9 +9,10 @@ my @config = qw/
     device
     signature
     tempo
+    ppqn
 /;
 
-my @events = qw/
+my @defines = qw/
     loop
     oneshot
 /;
@@ -24,11 +25,13 @@ my @parameters = qw/
     offset
     probability
     quantize
+    swing
     trigger
     velocity
 /;
 
 my @specials = qw/
+    copy
     finalize
     midi_bits
     random
@@ -39,6 +42,7 @@ my $aliases = { qw/
     delay     offset
     finalise  finalize
     port      device
+    ppq       ppqn
     prob      probability
     quantise  quantize
     quant     quantize
@@ -51,13 +55,13 @@ use meta;
 no warnings 'meta::experimental';
 my $meta = meta::get_this_package;
 
-use Carp qw/ croak /;
+use Carp qw/ croak carp /;
 use MIDI::LiveCode::Events;
 
 use parent 'Exporter';
 our @EXPORT_OK = our @EXPORT = (
     @config,
-    @events,
+    @defines,
     @parameters,
     @specials,
     keys $aliases->%*
@@ -96,15 +100,15 @@ for my $ev ( @events ) {
 for my $param ( @parameters ) {
     $meta->add_symbol(
         "&$param" => sub( $value = 1 ) {
-            _current_event->{ $param } = $value;
+            croak "'$param' called outside event definition" unless $event;
+            $event->{ $param } = $value;
         }
     )
 }
 
 sub random( $low, $hi ) {
-    _current_event;
-    $low += 0; $hi += 0;
-    "rand( $hi - $low ) + $low"
+    croak "'random' called outside event definition" unless $event;
+    "random( $low, $hi )";
 }
 
 sub midi_bits( $bits ) {
