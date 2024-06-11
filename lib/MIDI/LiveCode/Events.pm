@@ -31,7 +31,8 @@ class MIDI::LiveCode::Events {
     }
 
     method finalize {
-        croak "Events have already been finalized!"
+        #croak "Events have already been finalized!"
+        carp "Events have already been finalized!"
             if $events->{ finalized };
         $events->{ finalized } = 1;
     }
