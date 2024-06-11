@@ -10,6 +10,7 @@ my @config = qw/
     signature
     tempo
     ppqn
+    watch
 /;
 
 my @defines = qw/
@@ -41,6 +42,7 @@ my $aliases = { qw/
     bpm       tempo
     delay     offset
     finalise  finalize
+    pitch     note
     port      device
     ppq       ppqn
     prob      probability
@@ -86,13 +88,13 @@ for my $cfg ( @config ) {
     )
 }
 
-for my $ev ( @events ) {
+for my $def ( @defines ) {
     $meta->add_symbol(
-        "&$ev" => sub ( $name, $cb ) {
+        "&$def" => sub ( $name, $cb ) {
             defer { undef $event; }
             $event = {};
             $cb->();
-            _events->push_events( $name, [ $ev => $event ] );
+            _events->push_events( $name, [ $def => $event ] );
         }
     )
 }
