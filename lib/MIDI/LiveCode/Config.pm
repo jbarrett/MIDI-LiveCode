@@ -6,11 +6,13 @@ use meta;
 no warnings 'meta::experimental';
 
 my $config = {
-    channel   => 1,
-    midi_bits => 7,
-    ppqn      => 24,
-    trigger   => 10, #ms
-    velocity  => 127,
+    channel       => 1,
+    file_interval => 0.5, # sec
+    middle_c      => 'C4',
+    midi_bits     => 7,
+    ppqn          => 24,
+    trigger       => .01, # sec
+    velocity      => 127,
 };
 
 my $meta = meta::get_this_package;
