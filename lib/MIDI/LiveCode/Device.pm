@@ -1,7 +1,9 @@
 use v5.40;
-use experimental qw/ class /;
+use experimental qw/ class builtin /;
+my $instances;
+my $re_map;
 
-class MIDI::LiveCode::Device {
+class MIDI::LiveCode::Device :isa( MIDI::LiveCode::Decor ) {
 
     use MIDI::RtMidi::FFI::Device;
     use IO::Async::Loop;
@@ -17,17 +19,23 @@ class MIDI::LiveCode::Device {
     field $routine;
     field $channel;
 
+    sub for_name( $name ) {
+        # Need to think this out, as the name spec can be a regex
+    }
+
     async method watch {
         while ( my $msg = await $channel->recv ) {
             $cb->( $msg );
         }
     }
 
-    method note_on( $channel, $note, $velocity ) {
+    method note_on :CallBacker ( $channel, $note, $velocity ) {
+        say "note on $note";
         $device->send_event( note_on => $channel - 1, $note, $velocity )
     }
 
-    method note_off( $channel, $note ) {
+    method note_off :CallBacker ( $channel, $note ) {
+        say "note off $note";
         $device->send_event( note_off => $channel - 1, $note, 0 )
     }
 
@@ -59,6 +67,7 @@ RTN:
                 sleep;
             }
         );
+
         $loop->add( $routine );
         watch->retain;
     }
