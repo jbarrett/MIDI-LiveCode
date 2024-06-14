@@ -5,18 +5,14 @@ class MIDI::LiveCode::Watcher {
 
     use IO::Async::Loop;
     use IO::Async::File;
-    use IO::Async::Routine;
-    use IO::Async::Channel;
+    use MIDI::LiveCode::Sequencer;
+
+    use aliased 'MIDI::LiveCode::Config' => 'cfg';
 
     field $modules :param;
     field $loop = IO::Async::Loop->new;
     field $files;
-    field $routines;
     field $channels;
-
-    method bounce( $module ) {
-        $routines->{ $module }->kill( 'USR1' );
-    }
 
     method go {
         $loop->run;
@@ -31,11 +27,13 @@ class MIDI::LiveCode::Watcher {
             my $fn = $module =~ s{::}{/}gr . '.pm';
             require $fn;
             my $full_fn = $INC{ $fn };
+            my $sequencer = MIDI::LiveCode::Sequencer->for_module( $module );
             $files->{ $module } = IO::Async::File->new(
                 filename => $full_fn,
                 on_stat_changed => sub {
-                    $self->bounce( $module );
-                }
+                    $sequencer->reload;
+                },
+                interval => cfg->file_interval
             );
             $loop->add( $files->{$module} );
 

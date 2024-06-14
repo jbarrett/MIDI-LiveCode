@@ -1,5 +1,5 @@
 use v5.40;
-use experimental qw/ class builtin for_list /;
+use experimental qw/ class builtin /;
 my $instances;
 
 class MIDI::LiveCode::Sequencer {
@@ -15,19 +15,26 @@ class MIDI::LiveCode::Sequencer {
     use aliased 'MIDI::LiveCode::Config' => 'cfg';
 
     field $loop = IO::Async::Loop->new;
-    field $scheduler :param;
+    field $scheduler :reader;
     field $tempo = 120;
     field $prevtempo;
     field $bar;
     field $steps;
-    field $module :reader;
-    field $events :param;
+    field $module :reader :param;
+    field $events;
     field $device;
     field $numerator = 4;
     field $denominator = 4;
     field $snap = 0.005; # to nearest ppqn
+    field @futures;
+
+    sub for_module( $class, $module ) {
+        $instances->{ $module } //=
+        $class->new( module => $module );
+    }
 
     method device( $port ) {
+        return;
         $device //= MIDI::LiveCode::Device->new(
             direction => 'out',
             port => $port,
@@ -54,44 +61,68 @@ class MIDI::LiveCode::Sequencer {
         $duration = $self->duration_secs( $parameters->{ duration } )
             if $parameters->{ duration };
 
-        my $step_ppqn = $offset * cfg->ppqn;
+        my $step_ppqn = int $offset;
+        my $delay = $self->duration_secs( $offset - int $offset );
         my $beat = int $step_ppqn / cfg->ppqn;
         # TODO: definable loop length
         while ( $beat < $numerator ) {
-            $steps->{ "$beat.$step_ppqn" } = async sub {
-                # delay goes here
+            push $steps->{ "$beat.$step_ppqn" }->@*, async sub {
+                await Future::IO->sleep( $delay ) if $delay;
                 $device->note_on( $channel, $note, $velocity );
-                await Future::IO->sleep( $duration * cfg->ppqn );
+                await Future::IO->sleep( $duration );
                 $device->note_off( $channel, $note );
-
             };
             $step_ppqn += $every;
             $beat = int $step_ppqn / cfg->ppqn;
         }
+        use DDP; p $steps;
+        die;
+    }
+
+    method configure( $cfg ) {
 
     }
 
     method unroll {
-        for my ( $event, $parameters ) ( $events->%* ) {
-            next unless $self->can( $event );
-            $self->$event( $parameters );
+        $self->configure( $events->config );
+        for my ( $name, $event ) ( $events->music->%* ) {
+            my $type = $event->[0];
+            my $parameters = $event->[1];
+            use DDP; p $name; p $type; p $parameters;
+            #next unless $self->can( $event );
+            #$self->$event( $parameters );
         }
     }
 
-    method update( $events ) {
-
+    method reload {
+        try {
+            $events->reload;
+            $self->unroll;
+        }
+        catch ( $e ) {
+            warn $e;
+        }
     }
 
     method step( $beats ) {
-        
+        my $beat = $beats->{ beat } % $numerator;
+        #say "$beat . " . $beats->{ pulse };
+        my $key = sprintf '%s.%s', $beat, $beats->{ pulse };
+        for my $step ( $steps->{ $key }->@* ) {
+            my $res = $step->();
+            push @futures, $res if $res isa 'Future';
+        }
     }
 
     ADJUST {
         #$tempo = $events->{ tempo } if $events->{ tempo };
         #$prevtempo = $tempo;
+        $events = MIDI::LiveCode::Events->for_module( $module );
         $scheduler = MIDI::LiveCode::Scheduler
             ->for_tempo( $tempo )
             ->add_sequencer( $self );
         builtin::weaken $scheduler;
+        $self->reload;
     }
+
 }
