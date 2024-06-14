@@ -45,7 +45,7 @@ class MIDI::LiveCode::Scheduler {
             reschedule => 'hard',
             on_tick => sub {
                 my $beats = { pulse => $pulse, beat => $beat };
-                if ( $pulse == 0 ) {
+                if ( $pulse == 0 && $beat > 0 ) {
                     $beats->{bars}->{ $_ }++ for
                         grep { ! $_ % $beat } $barcounts->@*;
                 }
