@@ -36,23 +36,6 @@ class MIDI::LiveCode::Watcher {
                 interval => cfg->file_interval
             );
             $loop->add( $files->{$module} );
-
-            $channels->{ $module } = IO::Async::Channel->new;
-            $routines->{ $module } = IO::Async::Routine->new(
-                channels_out  => [ $channels->{ $module } ],
-                code => sub {
-                    require MIDI::LiveCode::Runner;
-                    MIDI::LiveCode::Runner->new(
-                        module => $module,
-                        channel => $channels->{ $module }
-                    )->go;
-                }
-            );
-            $loop->add( $routines->{$module} );
-            $channels->{ $module }->configure(
-                on_recv => sub {
-                    $self->_handle( @_ ) }
-            );
         }
     }
 
