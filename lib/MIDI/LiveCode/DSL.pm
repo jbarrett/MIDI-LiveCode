@@ -18,16 +18,16 @@ my @defines = qw/
     oneshot
 /;
 
-# Got both 'duration' and 'length' here, and they're basically semantically
-# interchangeable which is a problem.
-# Need to describe the length of a loop (wait, doesn't 'every' do this?)
-# and the length of triggered notes.
-# TODO: Figure it out.
+# For now (with defaults):
+# loop repeats every( bar )
+# tick repeats as many times as fits in a bar
+# length / duration is for a note which is once per bar
+# anything else can go into a ref
 my @parameters = qw/
     cc
     channel
-    duration
     every
+    tick
     length
     note
     offset
@@ -48,7 +48,8 @@ my @specials = qw/
 my $aliases = { qw/
     bpm       tempo
     delay     offset
-    dur       duration
+    dur       length
+    duration  length
     finalise  finalize
     len       length
     pitch     note
