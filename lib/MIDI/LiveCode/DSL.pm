@@ -120,7 +120,9 @@ for my $param ( @parameters ) {
 
 sub random( $low, $hi ) {
     croak "'random' called outside event definition" unless $event;
-    "random( $low, $hi )";
+    sub {
+        int rand( $hi - $low + 1 ) + $low;
+    }
 }
 
 sub midi_bits( $bits ) {
