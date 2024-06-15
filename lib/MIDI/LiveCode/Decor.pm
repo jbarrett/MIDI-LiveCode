@@ -16,8 +16,8 @@ class MIDI::LiveCode::Decor { # Looking forward to roles :)
         my $sym = '&' . *{$symbol}{NAME};
         $meta->remove_symbol( $sym );
         $meta->add_symbol(
-            $sym => sub {
-                $referent->( shift, map {
+            $sym => method {
+                $referent->( $self, map {
                     no warnings 'uninitialized';
                     builtin::reftype $_ eq 'CODE'
                         ? $_->()
@@ -33,9 +33,9 @@ class MIDI::LiveCode::Decor { # Looking forward to roles :)
         my $sym = '&' . *{$symbol}{NAME};
         $meta->remove_symbol( $sym );
         $meta->add_symbol(
-            $sym => sub {
-                return if $_[0]->events->{finalized};
-                $referent->( @_ );
+            $sym => method {
+                return if $self->events->{finalized};
+                $referent->( $self, @_ );
             }
         );
     }
