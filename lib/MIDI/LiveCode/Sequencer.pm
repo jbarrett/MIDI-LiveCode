@@ -19,9 +19,10 @@ class MIDI::LiveCode::Sequencer {
     field $tempo = 120;
     field $prevtempo;
     field $bar;
+    field $barnote;
     field $steps;
     field $module :reader :param;
-    field $events;
+    field $events :reader;
     field $device;
     field $numerator = 4;
     field $denominator = 4;
@@ -106,12 +107,18 @@ class MIDI::LiveCode::Sequencer {
 
     method step( $beats ) {
         my $beat = $beats->{ beat } % $numerator;
+        my $pulse = $beats->{ pulse };
         #say "$beat . " . $beats->{ pulse };
         my $key = sprintf '%s.%s', $beat, $beats->{ pulse };
         for my $step ( $steps->{ $key }->@* ) {
             my $res = $step->();
             push @futures, $res if $res isa 'Future';
         }
+    }
+
+    method time_signature( $sig ) {
+        ( $numerator, $denominator ) = split '/', $sig;
+        $barnote = $denominator / 4; # quarter notes
     }
 
     ADJUST {
@@ -124,5 +131,4 @@ class MIDI::LiveCode::Sequencer {
         builtin::weaken $scheduler;
         $self->reload;
     }
-
 }
