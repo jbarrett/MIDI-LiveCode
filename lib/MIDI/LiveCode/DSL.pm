@@ -86,7 +86,7 @@ sub _events {
 my $event;
 sub _current_event {
     my $caller = (caller(0))[3] =~ s/.*://gr;
-    croak "$caller called outside event definition" unless $event;
+    carp "$caller called outside event definition" unless $event;
     return $event;
 }
 
@@ -111,15 +111,18 @@ for my $def ( @defines ) {
 
 for my $param ( @parameters ) {
     $meta->add_symbol(
-        "&$param" => sub( $value = 1 ) {
-            croak "'$param' called outside event definition" unless $event;
-            $event->{ $param } = $value;
+        "&$param" => sub( $value, $cb = sub {} ) {
+            sub {
+                carp "'$param' called outside event definition" unless $event;
+                $event->{ $param } = $value;
+                $cb->();
+            }
         }
     )
 }
 
 sub random( $low, $hi ) {
-    croak "'random' called outside event definition" unless $event;
+    carp "'random' called outside event definition" unless $event;
     sub {
         int rand( $hi - $low + 1 ) + $low;
     }

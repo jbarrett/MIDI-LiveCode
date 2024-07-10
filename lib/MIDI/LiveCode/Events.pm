@@ -16,7 +16,8 @@ class MIDI::LiveCode::Events :isa( MIDI::LiveCode::Decor ) {
     }
 
     method push_events :SkipIfFinalized ( $name, $event ) {
-        croak "Event $name already exists"
+        #croak "Event $name already exists"
+        carp "Redefining $name!"
             if exists $events->{ events }->{ $name };
         $events->{ events }->{ $name } = $event;
     }
