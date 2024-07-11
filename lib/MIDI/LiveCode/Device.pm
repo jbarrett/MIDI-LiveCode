@@ -42,7 +42,7 @@ class MIDI::LiveCode::Device :isa( MIDI::LiveCode::Decor ) {
     ADJUST {
         $direction eq 'in' && goto RTN;
 
-        $device = MIDI::RtMidi::Device->new(
+        $device = MIDI::RtMidi::FFI::Device->new(
             type => $direction,
         );
         $device->open_virtual_port( 'midi-livecode-' . $$ )

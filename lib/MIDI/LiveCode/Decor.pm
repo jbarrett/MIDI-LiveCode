@@ -17,12 +17,13 @@ class MIDI::LiveCode::Decor { # Looking forward to roles :)
         $meta->remove_symbol( $sym );
         $meta->add_symbol(
             $sym => method {
-                $referent->( $self, map {
+                my @params = map {
                     no warnings 'uninitialized';
                     builtin::reftype $_ eq 'CODE'
                         ? $_->()
                         : $_
-                } @_ );
+                } @_;
+                $referent->( $self, @params );
             }
         );
     }
